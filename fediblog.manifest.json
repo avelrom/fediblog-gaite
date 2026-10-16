@@ -39,8 +39,6 @@
     "gaite": "avelrom/fediblog-gaite"
   },
   "public": [
-    "fediblog-icon.svg",
-    "fonts/InterVariable-Italic.woff2",
-    "fonts/InterVariable.woff2"
+    "fediblog-icon.svg"
   ]
 }

@@ -4,7 +4,7 @@
     "astro.config.mjs": "913a4e7c010e6a4fd20b8455fe40aacb531e01743c3cb139819d9c4d8cf200a5",
     "scripts/fediblog-switch.mjs": "e9e246c94d218cdf680af1ce8247275e801666a86d62b58865e4156c45a7065c",
     "scripts/fediblog-update.mjs": "17527ba076b42389edab58d04a08e32112b1fd55845b24fcf5b321f3222c2736",
-    "src/components/BaseHead.astro": "bb72f9d4cacbd4ca966b67a049ef821fd518b7d4e98120228b543373d9da58c9",
+    "src/components/BaseHead.astro": "bd24998378cb9d1b3a8877795b154ed1f16c78db868854d655f2669e5a3d4519",
     "src/components/FormattedDate.astro": "fb56be7547dfa21c42e92f9364c6096b7a0df03c2997c7ad64fdaede5f4ed003",
     "src/components/NotaCard.astro": "684c64a161d9f0eed199deadf7dbb77014f94294a2fced7d8ad88ee2a10a60ef",
     "src/components/Pagination.astro": "1ad36b2d105ba247f9baf9e8c8c1c1b6f4f50d836e31143481d7090631569a83",
@@ -27,6 +27,6 @@
     "src/pages/rss.xml.ts": "2d3218b5032c45b3e34824f7518c9c94cce3d12de2dbad4a3925d4e4a347553e",
     "src/pages/search.json.ts": "578beb271d51c386dd1e5790313bf8b6fb4b5aad8fd78622251457f06100b51d",
     "src/panel-fields.ts": "2de830156071d4d556441335577797fbc1ecfde815def078ca96eb45a325dc1a",
-    "src/styles/global.css": "6f1b9796c914f63633f99a2951b2048a607782226f83c64423d96217417b4c0a"
+    "src/styles/global.css": "79e60b1d3ccc7afcc2cbd85f8cd9e95ab460adbd21f606619d0531414653c2cf"
   }
 }

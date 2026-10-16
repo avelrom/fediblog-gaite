@@ -32,8 +32,8 @@
   --cw-bg: var(--bg-tint);
   --cw-fg: var(--muted);
 
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'Commit Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --body: var(--sans);
   --display: var(--sans);
@@ -57,9 +57,9 @@
 }
 
 :root[data-font='serif'] {
-  --sans: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
-  --body: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
-  --display: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --sans: 'Newsreader Variable', 'Iowan Old Style', Charter, 'Bitstream Charter', Georgia, serif;
+  --body: 'Newsreader Variable', 'Iowan Old Style', Charter, 'Bitstream Charter', Georgia, serif;
+  --display: 'Newsreader Variable', 'Iowan Old Style', Charter, 'Bitstream Charter', Georgia, serif;
 }
 :root[data-font='mono'] {
   --sans: var(--mono);
