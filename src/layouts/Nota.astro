@@ -1,0 +1,59 @@
+---
+import Base from './Base.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import TagList from '../components/TagList.astro';
+import ContentWarning from '@fediblog/core/components/ContentWarning.astro';
+import Engagement from '@fediblog/core/components/Engagement.astro';
+import Comments from '@fediblog/core/components/Comments.astro';
+import { SITE } from '../config';
+import { truncate } from '@fediblog/core/lib/format';
+import type { Nota } from '@fediblog/core/lib/notas';
+
+interface Props {
+  nota: Nota;
+}
+
+const { nota } = Astro.props;
+const {
+  title, subtitle, description, excerpt, date, updated, tags, cw,
+  likes, shares, comments, commentCount, sourceUrl,
+} = nota.data;
+const P = SITE.post;
+const sameDay =
+  updated && new Date(updated).toDateString() === new Date(date).toDateString();
+const postDesc = description || subtitle || excerpt;
+---
+
+<Base title={title} isPost description={truncate(postDesc, 200)}>
+  <article class="nota">
+    <header class="nota-header">
+      <div class="meta">
+        {P.showDate && <a class="date-link" href={sourceUrl} target="_blank" rel="noopener noreferrer" title="Abrir la publicación original"><FormattedDate date={date} data-preview-field="post.showDate" data-preview-label="Fecha" data-preview-group="Entrada" /></a>}
+        {P.showDate && updated && !sameDay && (
+          <FormattedDate date={updated} prefix="· act." icon={false} data-preview-field="post.showDate" data-preview-label="Fecha" data-preview-group="Entrada" />
+        )}
+      </div>
+      <h1>{title}</h1>
+      {(description || subtitle) && (
+        <p class="nota-subtitle">{description || subtitle}</p>
+      )}
+    </header>
+
+    {cw ? (
+      <ContentWarning cw={cw}><div class="nota-body"><slot /></div></ContentWarning>
+    ) : (
+      <div class="nota-body"><slot /></div>
+    )}
+
+    {P.showTags && <TagList tags={tags} data-preview-field="post.showTags" data-preview-label="Etiquetas" data-preview-group="Entrada" />}
+
+    {P.showMetrics && (
+      <Engagement likes={likes} shares={shares} sourceUrl={sourceUrl} previewHooks data-preview-field="post.showMetrics" data-preview-label="Métricas (me gusta / compartidos)" data-preview-group="Entrada" />
+    )}
+
+    {P.showComments && (
+      <Comments comments={comments} count={commentCount} sourceUrl={sourceUrl} previewHooks locale={SITE.site.locale} avatars={SITE.post.commentAvatars} data-preview-field="post.showComments" data-preview-label="Mostrar comentarios" data-preview-group="Comentarios" />
+    )}
+
+  </article>
+</Base>

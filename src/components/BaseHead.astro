@@ -1,0 +1,114 @@
+---
+import { resolveSizes } from '@fediblog/core/lib/view-size';
+import { SITE } from '../config';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = SITE.site.description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const rssHref = new URL('rss.xml', Astro.site);
+const base = import.meta.env.BASE_URL;
+const S = SITE.site;
+const { sizes, defaultSize } = resolveSizes(S.sizes, S.defaultSize);
+
+const fontCss = `
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('${base}fonts/InterVariable.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Inter';
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('${base}fonts/InterVariable-Italic.woff2') format('woff2');
+  }
+`;
+
+// Anchos, colores y tamaños de texto configurables + tokens de la paleta oscura.
+const colors = S.colors || {};
+const fontSize = { base: '0.85rem', prose: '0.92rem', brand: '1.05rem', cardTitle: '0.95rem', description: '0.88rem', postTitle: '1.35rem' };
+const accent = colors.accent || S.accent || '#52525b';
+
+const rootVars =
+  `:root{--wrap-single:${S.width}rem;--wrap-sidebar:${S.width + 16}rem;` +
+  `--measure:${S.readingWidth}rem;` +
+  `--body:var(--sans);--display:var(--sans);` +
+  `--accent:${accent};` +
+  `--accent-tint:color-mix(in srgb, ${accent} 12%, transparent);` +
+  (colors.bg ? `--bg:${colors.bg};` : '') +
+  (colors.fg ? `--fg:${colors.fg};` : '') +
+  (colors.prose ? `--prose:${colors.prose};` : '') +
+  (colors.muted ? `--muted:${colors.muted};` : '') +
+  (colors.meta ? `--meta:${colors.meta};` : '') +
+  (colors.rule ? `--rule:${colors.rule};` : '') +
+  (fontSize.base ? `--font-size-base:${fontSize.base};` : '') +
+  (fontSize.prose ? `--font-size-prose:${fontSize.prose};` : '') +
+  (fontSize.brand ? `--font-size-brand:${fontSize.brand};` : '') +
+  (fontSize.cardTitle ? `--font-size-card-title:${fontSize.cardTitle};` : '') +
+  (fontSize.description ? `--font-size-description:${fontSize.description};` : '') +
+  (fontSize.postTitle ? `--font-size-post-title:${fontSize.postTitle};` : '') +
+  `}`;
+
+const darkBg = colors.darkBg || '#09090b';
+const darkFg = colors.darkFg || '#f4f4f5';
+const darkProse = colors.darkProse || '#e4e4e7';
+const darkMuted = colors.darkMuted || '#a1a1aa';
+const darkMeta = colors.darkMeta || '#a1a1aa';
+const darkRule = colors.darkRule || '#27272a';
+const darkAccent = (colors as Record<string, string | null | undefined>).darkAccent || colors.accent || S.accent || '#a1a1aa';
+
+const DARK = `color-scheme: dark;
+  --bg: ${darkBg}; --bg-tint: #18181b; --card: #0e0e10; --fg: ${darkFg}; --prose: ${darkProse}; --muted: ${darkMuted}; --meta: ${darkMeta}; --rule: ${darkRule};
+  --link: ${darkFg}; --code-bg: #18181b;
+  --accent: ${darkAccent};
+  --accent-tint: color-mix(in srgb, var(--accent) 18%, transparent);`;
+
+const themeCss =
+  `@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${DARK}}}` +
+  `:root[data-theme="dark"]{${DARK}}`;
+const colorScheme = 'light dark';
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg?v=2`} />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<link rel="alternate" type="application/rss+xml" title={S.title} href={rssHref} />
+<link rel="alternate" type="application/feed+json" title={`${S.title} (JSON Feed)`} href={new URL('feed.json', Astro.site)} />
+
+<meta name="color-scheme" content={colorScheme} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={S.title} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+
+<script is:inline define:vars={{ darkMode: S.darkMode, sizes, defaultSize }}>
+  try {
+    var t = darkMode === 'light' || darkMode === 'dark' ? darkMode : darkMode === 'toggle' ? localStorage.getItem('fb-theme') : null;
+    if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+  } catch (e) {}
+  try {
+    var s = localStorage.getItem('gaite-size') || defaultSize;
+    if (sizes.indexOf(s) < 0) s = defaultSize;
+    document.documentElement.setAttribute('data-size', s);
+  } catch (e) {}
+</script>
+
+<link rel="preload" href={`${base}fonts/InterVariable.woff2`} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={`${base}fonts/InterVariable-Italic.woff2`} as="font" type="font/woff2" crossorigin />
+<style is:inline set:html={fontCss + rootVars} />
+
+{themeCss && <style is:global set:html={themeCss} />}

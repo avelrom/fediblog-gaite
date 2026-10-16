@@ -1,0 +1,31 @@
+---
+import { Calendar } from '@lucide/astro';
+import { SITE } from '../config';
+import { formatDate } from '@fediblog/core/lib/format';
+
+interface Props {
+  date: Date;
+  prefix?: string;
+  icon?: boolean;
+  [key: `data-${string}`]: string | undefined;
+}
+
+const { date, prefix, icon = true, ...rest } = Astro.props;
+const label = formatDate(date, SITE.site.dateFormat);
+const isUpdate = prefix && prefix.includes('act.');
+---
+
+<time datetime={date.toISOString()} {...rest}>
+  {icon && <Calendar size={13} aria-hidden="true" class="icon" />}
+  {isUpdate ? (
+    <>
+      <span aria-hidden="true">{prefix} </span>
+      <span class="sr-only">Actualizado el </span>
+    </>
+  ) : prefix ? (
+    `${prefix} `
+  ) : (
+    <span class="sr-only">Publicado el </span>
+  )}
+  {label}
+</time>

@@ -1,0 +1,78 @@
+---
+import { isOff } from '@fediblog/core/lib/flags';
+import { SquareAsterisk } from '@lucide/astro';
+import Base from '../layouts/Base.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { getNotas, getFeatured, getNotasByYear, getTags } from '@fediblog/core/lib/notas';
+import { SITE, PATHS } from '../config';
+
+if (isOff(SITE.archive?.show)) return Astro.redirect(import.meta.env.BASE_URL);
+
+const notas = await getNotas();
+const featured = SITE.archive.showFeatured ? await getFeatured() : [];
+const byYear = await getNotasByYear();
+const tags = await getTags();
+const base = import.meta.env.BASE_URL;
+const href = (id: string) => `${base}${id}/`;
+---
+
+<Base title="Archivo" description={`Todas las entradas de ${SITE.site.title}.`}>
+  <section class="archive">
+    <header class="archive-header">
+      <h1 class="sr-only">Archivo</h1>
+      <p>{notas.length} {notas.length === 1 ? 'entrada' : 'entradas'} en total.</p>
+    </header>
+
+    <div id="archive-browse">
+      {SITE.archive.showTagCloud && tags.length > 0 && (
+        <nav class="tags-block" aria-label="Filtrar por etiqueta" data-preview-field="archive.showTagCloud" data-preview-label="Nube de etiquetas" data-preview-group="Archivo">
+          <h2>Etiquetas</h2>
+          <ul class="tag-cloud">
+            {tags.map((tag) => (
+              <li>
+                <a href={`${base}${PATHS.tags}/${tag.slug}/`}>
+                  {tag.name} <span class="count">{tag.count}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      {featured.length > 0 && (
+        <section class="featured-block" data-preview-field="archive.showFeatured" data-preview-label="Bloque de destacados" data-preview-group="Archivo">
+          <h2>Destacados</h2>
+          <ul class="archive-list">
+            {featured.map((n) => (
+              <li class="is-featured">
+                <FormattedDate date={n.data.date} icon={false} />
+                <a href={href(n.id)}><span class="sr-only">Entrada destacada: </span><span>{n.data.title}</span></a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div id="archive-years">
+        {byYear.map(([year, items]) => (
+          <section class="year-block">
+            <h2>{year}</h2>
+            <ul class="archive-list">
+              {items.map((n) => (
+                <li class={n.data.featured ? 'is-featured' : undefined}>
+                  <FormattedDate date={n.data.date} icon={false} />
+                  <a href={href(n.id)}>
+                    {n.data.featured && <SquareAsterisk size={13} aria-hidden="true" class="icon" />}
+                    {n.data.featured && <span class="sr-only">Entrada destacada: </span>}
+                    <span>{n.data.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  </section>
+
+</Base>

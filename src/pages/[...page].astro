@@ -1,0 +1,90 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import Base from '../layouts/Base.astro';
+import NotaCard from '../components/NotaCard.astro';
+import Pagination from '../components/Pagination.astro';
+import { getNotas, type Nota } from '@fediblog/core/lib/notas';
+import { SITE } from '../config';
+import { actor } from '../lib/actor';
+import { resolveTokens } from '@fediblog/core/lib/format';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const notas = await getNotas();
+  return paginate(notas, { pageSize: SITE.home.postsPerPage });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page<Nota>;
+}
+
+const { page } = Astro.props;
+const total = (await getNotas()).length;
+
+const ctx = {
+  title: SITE.site.title,
+  name: actor.name,
+  handle: actor.handle,
+  bio:
+    actor.summaryHtml.replace(/<[^>]+>/g, '').trim() ||
+    SITE.site.description,
+  count: total,
+};
+const intro = SITE.home.intro;
+const introTitle = resolveTokens(intro.title, ctx);
+const subtitleIsBio = intro.subtitle.trim() === '{bio}' && actor.summaryHtml;
+const introSubtitle = resolveTokens(intro.subtitle, ctx);
+const showIntro = page.currentPage === 1 && intro.show;
+const base = import.meta.env.BASE_URL;
+const introAvatar = intro.avatar && actor.avatar ? `${base}${actor.avatar}` : null;
+---
+
+<Base description={SITE.site.description} isHome>
+  {/* Marcadores sin contenido propio: ajustes de contenido que no tienen un
+      sitio natural donde previsualizarse (cuántas entradas por página, qué
+      marca convierte un mensaje en entrada…), pero se recuerdan y exportan
+      igual. */}
+
+  {showIntro && (
+    <section slot="intro" class:list={['intro', introAvatar && 'has-avatar']} data-preview-field="home.intro.show" data-preview-label="Bloque de presentación" data-preview-group="Inicio (portada)">
+      {introAvatar && (
+        <img
+          class="intro-avatar"
+          src={introAvatar}
+          alt={`Avatar de ${actor.name}`}
+          width="112"
+          height="112"
+          data-preview-field="home.intro.avatar"
+          data-preview-label="Avatar en la presentación"
+          data-preview-group="Inicio (portada)"
+          data-preview-class="has-avatar"
+          data-preview-class-target=".intro"
+        />
+      )}
+      <div class="intro-text">
+        {introTitle && <p class="intro-title">{introTitle}</p>}
+        {subtitleIsBio ? (
+          <div class="intro-bio" set:html={actor.summaryHtml} />
+        ) : (
+          introSubtitle && <p>{introSubtitle}</p>
+        )}
+      </div>
+    </section>
+  )}
+
+  {page.data.length === 0 ? (
+    <p>Todavía no hay entradas. Publica algo desde <strong>{actor.handle}</strong>.</p>
+  ) : (
+    <ul class="nota-list">
+      {page.data.map((nota) => (
+        <NotaCard nota={nota} />
+      ))}
+    </ul>
+  )}
+
+  <Pagination
+    prev={page.url.prev}
+    next={page.url.next}
+    current={page.currentPage}
+    total={page.lastPage}
+  />
+</Base>

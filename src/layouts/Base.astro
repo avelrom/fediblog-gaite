@@ -1,0 +1,287 @@
+---
+import { isOff } from '@fediblog/core/lib/flags';
+import BaseHead from '../components/BaseHead.astro';
+import SocialLinks from '@fediblog/core/components/SocialLinks.astro';
+import RssCopy from '@fediblog/core/components/RssCopy.astro';
+import NavIcon from '@fediblog/core/components/Icon.astro';
+import ThemeToggle from '@fediblog/core/components/ThemeToggle.astro';
+import SearchDialog from '@fediblog/core/components/SearchDialog.astro';
+import '@fediblog/core/styles/nav-icons.css';
+import { GAITE_FIELDS } from '../panel-fields';
+import ConfigFields from '@fediblog/core/components/ConfigFields.astro';
+import ThemeFontSizes from '@fediblog/core/components/ThemeFontSizes.astro';
+import { fontSizeAttrs } from '@fediblog/core/lib/font-sizes';
+import ThemeColors from '@fediblog/core/components/ThemeColors.astro';
+import PreviewSidebar from '@fediblog/core/components/PreviewSidebar.astro';
+import Footer from '@fediblog/core/components/Footer.astro';
+import { resolveSizes } from '@fediblog/core/lib/view-size';
+import ViewSizeDock from '@fediblog/core/components/ViewSizeDock.astro';
+import { SITE } from '../config';
+import { actor } from '../lib/actor';
+// Texto real de config.ts (comentarios y formato incluidos), para que
+// «Exportar configuración» del panel de vista previa pueda partir del
+// archivo tal cual y solo sustituir el valor de los campos tocados, en vez
+// de generar un volcado sin comentarios (ver PreviewSidebar.astro). `?raw`
+// es de Vite: se resuelve en la propia compilación, a diferencia de leer el
+// archivo con fs en tiempo de ejecución (que se rompe una vez empaquetado,
+// porque la ruta relativa deja de apuntar a src/).
+import configSource from '../config.ts?raw';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Ensancha el contenedor (para páginas-herramienta como el editor). */
+  wide?: boolean;
+  /** Página de una entrada: solo ahí el título de la pestaña lleva el de la entrada. */
+  isPost?: boolean;
+  /**
+   * Solo la portada la pone a `true`: los ajustes generales del sitio
+   * (título, colores, tamaños de texto, menú, redes, cuenta…) solo tienen
+   * sentido mostrarlos ahí en el panel de vista previa — en una entrada
+   * concreta o en «Acerca de» solo interesa lo propio de esa vista.
+   */
+  isHome?: boolean;
+}
+
+const { title, description, wide, isHome = false, isPost = false } = Astro.props;
+const pageTitle = isPost && title ? `${title} · ${SITE.site.title}` : SITE.site.title;
+const base = import.meta.env.BASE_URL;
+const [name, tail] = SITE.site.title.includes(' ')
+  ? [SITE.site.title.split(' ')[0], SITE.site.title.slice(SITE.site.title.indexOf(' '))]
+  : [SITE.site.title, ''];
+const showToggle = SITE.site.darkMode === 'toggle';
+const layout = wide ? 'single' : SITE.site.layout;
+// El «Live Preview» de Fediblog lo activa con esta variable de entorno en su
+// propio despliegue (no vive en ningún archivo, así que no viaja al clonar
+// el repo); si no, manda el config.ts de cada quien.
+const showPreviewSidebar = (SITE.site.previewSidebar || import.meta.env.PUBLIC_FB_LIVE_PREVIEW === '1') && !wide;
+
+const path = Astro.url.pathname.replace(/\/$/, '');
+const isActive = (href: string) => path === href.replace(/\/$/, '');
+
+const rawIconsMode = (SITE.site as any).navIconsMode ?? 'both';
+const navIconsMode: 'both' | 'mobile' | 'desktop' | 'none' =
+  rawIconsMode === 'movil' || rawIconsMode === 'mobile'
+    ? 'mobile'
+    : rawIconsMode === 'escritorio' || rawIconsMode === 'desktop'
+      ? 'desktop'
+      : rawIconsMode === 'none' || rawIconsMode === 'ninguno' || !rawIconsMode
+        ? 'none'
+        : 'both';
+
+const dockSizes = resolveSizes(SITE.site.sizes, SITE.site.defaultSize);
+const menu = SITE.site.menu;
+const NAV_ITEMS: Record<string, { href: string; label: string; enabled: boolean; icon?: string }> = {
+  home: { href: base, enabled: true, ...menu.home },
+  archive: { href: `${base}archivo/`, enabled: !isOff(SITE.archive?.show), ...menu.archive },
+  about: { href: `${base}about/`, enabled: !isOff(SITE.profile?.show), ...menu.about },
+  rss: { href: `${base}rss.xml`, enabled: true, ...menu.rss },
+};
+const nav = SITE.site.nav
+  .map((k) => ({ key: k, ...NAV_ITEMS[k] }))
+  .filter((x) => x && x.enabled);
+
+const bioHtml =
+  actor.summaryHtml ||
+  SITE.site.description;
+---
+
+<!doctype html>
+<html {...fontSizeAttrs(SITE.site.fontSize)} lang={SITE.site.locale || 'es'} data-layout={layout} data-font={SITE.site.font}>
+  <head>
+    <BaseHead title={pageTitle} description={description} />
+    <ThemeColors colors={SITE.site.colors} vars={{ title: ['--title-color'] }} titleSelectors={['.site-title', '.nota-header h1', '.nota-text h2', '.intro-title']} titleFallback="var(--fg)" />
+    <ThemeFontSizes selectors={{ brand: ['.site-title'], title: ['.nota-item h2'], postTitle: ['.nota-header h1'], body: ['.nota-body', '.nota-item .nota-desc', '.excerpt'] }} />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Saltar al contenido</a>
+    <div class:list={['wrap', wide && 'wide']}>
+     <div class="site-rail">
+      <header class="site-header">
+        <div class="site-brand">
+          {/* El nombre del sitio es el h1 de la portada (es su título
+              principal) y un enlace normal en el resto de páginas, que ya
+              tienen su propio h1 (el de la entrada, «Acerca de»…). Sin esto
+              la portada no tenía ningún h1. */}
+          {isHome ? (
+            <h1 class="site-title-heading">
+              <a
+                href={base}
+                class="site-title"
+                data-preview-field="site.title"
+                data-preview-type="text"
+                data-preview-sync-title="true"
+                data-preview-label="Título del sitio"
+                data-preview-group="Cabecera"
+              >{name}<span>{tail}</span></a>
+            </h1>
+          ) : (
+            <a
+              href={base}
+              class="site-title"
+              data-preview-field="site.title"
+              data-preview-type="text"
+              data-preview-sync-title="true"
+              data-preview-label="Título del sitio"
+              data-preview-group="Cabecera"
+              data-preview-panel="false"
+            >{name}<span>{tail}</span></a>
+          )}
+          {actor.avatar && (
+            <img
+              class="site-avatar"
+              src={`${base}${actor.avatar}`}
+              alt={`Foto de ${actor.name}`}
+              width="256"
+              height="256"
+            />
+          )}
+        </div>
+
+        <div class="site-nav-group">
+          <nav class="site-nav" data-icons-mode={navIconsMode} aria-label="Navegación principal">
+            {nav.map((item) => (
+              <a
+                href={item.href}
+                data-copy-rss={item.key === 'rss' ? `${base}rss.xml` : undefined}
+                class:list={[isActive(item.href) && 'active', item.icon && 'has-icon']}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                aria-label={item.label}
+                title={item.label}
+              >
+                {item.icon && (
+                  <span class="nav-icon" aria-hidden="true">
+                    <NavIcon name={item.icon} size={15} />
+                  </span>
+                )}
+                <span class="nav-label" data-preview-field={`site.menu.${item.key}.label`} data-preview-type="text" data-preview-label={`«${item.label}»: texto del enlace`} data-preview-group="Menú">{item.label}</span>
+              </a>
+            ))}
+            {SITE.archive.showSearch && (
+              <button type="button" class="theme-toggle" data-search-open hidden aria-label="Buscar" title="Buscar (/)">
+                <NavIcon name="search" size={15} />
+              </button>
+            )}
+            {showToggle && <ThemeToggle />}
+          </nav>
+
+          <div class:list={['site-tools', SITE.site.hideSocialOnMobile && 'hide-social-mobile']}>
+            <SocialLinks social={SITE.social} editableInPanel={isHome} />
+          </div>
+        </div>
+      </header>
+
+      <slot name="intro">
+        {bioHtml && (
+          <section class="intro sidebar-bio-only">
+            <div class="intro-bio" set:html={bioHtml} />
+          </section>
+        )}
+      </slot>
+     </div>
+
+      <main id="main-content" tabindex="-1">
+        <slot />
+      </main>
+
+      <Footer authorName={actor.name} siteTitle={SITE.site.title} base={base} />
+    </div>
+
+    <ViewSizeDock sizes={dockSizes.sizes} activeSize={dockSizes.defaultSize} themeId="gaite" />
+
+    {showPreviewSidebar && (
+      <Fragment>
+        {/* Marcadores sin contenido propio: no cambian nada visible por sí
+            mismos, solo le dan al panel de vista previa un sitio donde
+            enganchar selectores que no tienen un elemento natural al que
+            engancharse (colores y tamaños de texto van a variables CSS
+            globales; cuenta y disposición no tienen una vista previa real
+            posible, pero se recuerdan y exportan igual). Se quedan siempre
+            en la página — así el cambio se ve en cualquier vista aunque se
+            haya editado desde la portada — pero `data-preview-panel` los
+            oculta de la lista de controles fuera de la portada, para no
+            repetir ahí los mismos ajustes generales. */}
+
+
+
+
+
+        <PreviewSidebar siteConfig={SITE} configSource={configSource} themeId="gaite" />
+        <ConfigFields siteConfig={SITE} colorVars={{ accent: ['--accent'], title: ['--title-color'] }} titleSample=".site-title" extra={GAITE_FIELDS} />
+      </Fragment>
+    )}
+
+    <script is:inline>
+      (function () {
+        function externalizeLinks() {
+          var links = document.querySelectorAll('a[href]');
+          for (var i = 0; i < links.length; i++) {
+            var a = links[i];
+            var href = a.getAttribute('href');
+            if (!href) continue;
+            if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')) {
+              try {
+                var url = new URL(href, window.location.href);
+                if (url.origin !== window.location.origin) {
+                  a.setAttribute('target', '_blank');
+                  var rel = (a.getAttribute('rel') || '').split(/\s+/).filter(Boolean);
+                  if (!rel.includes('noopener')) rel.push('noopener');
+                  if (!rel.includes('noreferrer')) rel.push('noreferrer');
+                  a.setAttribute('rel', rel.join(' '));
+                }
+              } catch (e) {}
+            }
+          }
+        }
+        function initCodeCopy() {
+          var pres = document.querySelectorAll('pre');
+          for (var j = 0; j < pres.length; j++) {
+            var pre = pres[j];
+            if (pre.querySelector('.code-copy-btn') || pre.closest('.editor-panes') || pre.id === 'out') continue;
+            if (!pre.textContent || !pre.textContent.trim()) continue;
+            pre.classList.add('has-copy-btn');
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'code-copy-btn';
+            btn.setAttribute('aria-label', 'Copiar código');
+            btn.setAttribute('title', 'Copiar código');
+            btn.innerHTML =
+              '<svg class="icon-copy" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>' +
+              '<svg class="icon-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+            (function (p, b) {
+              b.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var code = p.querySelector('code');
+                var text = (code ? code.innerText : p.innerText).replace(/\n$/, '');
+                navigator.clipboard.writeText(text).then(function () {
+                  b.classList.add('copied');
+                  b.setAttribute('aria-label', 'Código copiado');
+                  b.setAttribute('title', 'Código copiado');
+                  setTimeout(function () {
+                    b.classList.remove('copied');
+                    b.setAttribute('aria-label', 'Copiar código');
+                    b.setAttribute('title', 'Copiar código');
+                  }, 1800);
+                });
+              });
+            })(pre, btn);
+            pre.appendChild(btn);
+          }
+        }
+        window.initCodeCopy = initCodeCopy;
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () {
+            externalizeLinks();
+            initCodeCopy();
+          });
+        } else {
+          externalizeLinks();
+          initCodeCopy();
+        }
+      })();
+    </script>
+    {SITE.archive.showSearch && <SearchDialog />}
+    <RssCopy />
+  </body>
+</html>

@@ -1,0 +1,31 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import NotaCard from '../../components/NotaCard.astro';
+import { getTags, getNotasByTagSlug } from '@fediblog/core/lib/notas';
+
+export const getStaticPaths = (async () => {
+  const tags = await getTags();
+  return Promise.all(
+    tags.map(async (tag) => ({
+      params: { tag: tag.slug },
+      props: { name: tag.name, notas: await getNotasByTagSlug(tag.slug) },
+    })),
+  );
+}) satisfies GetStaticPaths;
+
+const { name, notas } = Astro.props;
+---
+
+<Base title={`#${name}`} description={`Entradas etiquetadas con «${name}».`}>
+  <section class="intro">
+    <h1 style="margin-top: 1rem;">#{name}</h1>
+    <p>{notas.length} {notas.length === 1 ? 'entrada' : 'entradas'}</p>
+  </section>
+
+  <ul class="nota-list">
+    {notas.map((nota) => (
+      <NotaCard nota={nota} />
+    ))}
+  </ul>
+</Base>

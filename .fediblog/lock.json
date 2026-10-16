@@ -1,0 +1,32 @@
+{
+  "version": "main",
+  "files": {
+    "astro.config.mjs": "913a4e7c010e6a4fd20b8455fe40aacb531e01743c3cb139819d9c4d8cf200a5",
+    "scripts/fediblog-switch.mjs": "e9e246c94d218cdf680af1ce8247275e801666a86d62b58865e4156c45a7065c",
+    "scripts/fediblog-update.mjs": "17527ba076b42389edab58d04a08e32112b1fd55845b24fcf5b321f3222c2736",
+    "src/components/BaseHead.astro": "bb72f9d4cacbd4ca966b67a049ef821fd518b7d4e98120228b543373d9da58c9",
+    "src/components/FormattedDate.astro": "fb56be7547dfa21c42e92f9364c6096b7a0df03c2997c7ad64fdaede5f4ed003",
+    "src/components/NotaCard.astro": "684c64a161d9f0eed199deadf7dbb77014f94294a2fced7d8ad88ee2a10a60ef",
+    "src/components/Pagination.astro": "1ad36b2d105ba247f9baf9e8c8c1c1b6f4f50d836e31143481d7090631569a83",
+    "src/components/TagList.astro": "5ecb586cc266162c6a63cf568d6b1314b4130384f26b6dcc5800f95cf0c77463",
+    "src/content.config.ts": "a89475314aeaf53c9d2dc62e14a6df257c69c3195245f7543e20a0e271a4ca3b",
+    "src/layouts/Base.astro": "466596bbb2aa0554752bd6966bf5086d10d5462b6d1f41c9fc9fcb98b494ad06",
+    "src/layouts/Nota.astro": "9d9aab2d28ec02cba4a761e3578b24c3e436f3bb13ce73f8235d5e08f38a4a19",
+    "src/lib/actor.ts": "c028f074bd2cacfab6a758f9af26a9bbb59d983769ba637c6aeb41fe9e7740b2",
+    "src/lib/feed.ts": "a155051a8a6e1251f933533ff92b3933da6b8fc8c82c706df30de360784feaec",
+    "src/pages/404.astro": "536cf2b215c55ab6fe09667d6412b453552ebe95f60b0a7e98b82fb960646550",
+    "src/pages/[...page].astro": "45826282fa40ecc5fab38ccc53123b9e8e1d83f0bc7c54d3707821f0f235252f",
+    "src/pages/[slug].astro": "7eca9f5d7171c0e161f6e3200162c7a366868235e5e3540adc5274441f0cd3c4",
+    "src/pages/about.astro": "e18c7b9046f779b3e3feee94b5508b06ce5fe82e97ab3c7d9ab9fc1a366bd938",
+    "src/pages/archivo.astro": "1e571b02d2c32a3abeb17123ff7493578d3c966a11f06fde8da6f181a0cc08f1",
+    "src/pages/editor.astro": "70c99a6b5859c214150eb4f84e3befeeddc24a2ccbee3dc5285028eb533bca9a",
+    "src/pages/etiquetas/[tag].astro": "715c413667911f77867f27c4a0b0398c894ecdf8af2322c9748daa8bf60a74d7",
+    "src/pages/favicon.svg.ts": "7a235348d0f5b14425c5f881d4fac5ac2296261eb6c46e2e047b6ca8da52d028",
+    "src/pages/feed.json.ts": "9cb71d193e4f39b8e2d798209bd9f0d0f9d7089dbaa8190c4a6ebe0fac4fd59e",
+    "src/pages/rss-styles.xsl.ts": "bb9a9a7334457d55247f4747e4c45660091c6532f32315092135bae7cf5fadde",
+    "src/pages/rss.xml.ts": "2d3218b5032c45b3e34824f7518c9c94cce3d12de2dbad4a3925d4e4a347553e",
+    "src/pages/search.json.ts": "578beb271d51c386dd1e5790313bf8b6fb4b5aad8fd78622251457f06100b51d",
+    "src/panel-fields.ts": "2de830156071d4d556441335577797fbc1ecfde815def078ca96eb45a325dc1a",
+    "src/styles/global.css": "6f1b9796c914f63633f99a2951b2048a607782226f83c64423d96217417b4c0a"
+  }
+}

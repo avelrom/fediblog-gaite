@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Nota from '../layouts/Nota.astro';
+import { getNotas } from '@fediblog/core/lib/notas';
+
+export const getStaticPaths = (async () => {
+  const notas = await getNotas();
+  return notas.map((nota) => ({ params: { slug: nota.id }, props: { nota } }));
+}) satisfies GetStaticPaths;
+
+const { nota } = Astro.props;
+const { Content } = await render(nota);
+---
+
+<Nota nota={nota}>
+  <Content />
+</Nota>

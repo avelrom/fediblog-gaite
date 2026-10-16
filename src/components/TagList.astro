@@ -1,0 +1,26 @@
+---
+import { Tag } from '@lucide/astro';
+import { PATHS } from '../config';
+import { slugify } from '@fediblog/core/lib/slug';
+
+interface Props {
+  tags: string[];
+  [key: `data-${string}`]: string | undefined;
+}
+
+const { tags, ...rest } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+{
+  tags.length > 0 && (
+    <nav class="tags" aria-label="Etiquetas de la entrada" {...rest}>
+      {tags.map((tag) => (
+        <a href={`${base}${PATHS.tags}/${slugify(tag)}/`} aria-label={`Etiqueta: ${tag}`}>
+          <Tag size={11} aria-hidden="true" class="icon" />
+          <span>{tag}</span>
+        </a>
+      ))}
+    </nav>
+  )
+}

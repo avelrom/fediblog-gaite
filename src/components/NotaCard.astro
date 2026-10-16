@@ -1,0 +1,95 @@
+---
+import { Heart, Repeat2, MessageCircle } from '@lucide/astro';
+import FormattedDate from './FormattedDate.astro';
+import { SITE } from '../config';
+import { truncate } from '@fediblog/core/lib/format';
+import type { Nota } from '@fediblog/core/lib/notas';
+
+interface Props {
+  nota: Nota;
+}
+
+const { nota } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const href = `${base}${nota.id}/`;
+const { title, subtitle, description, excerpt, date, cw, likes, shares, commentCount } =
+  nota.data;
+
+const H = SITE.home;
+const showTitle = (H as any).showTitle ?? true;
+const showDescription = (H as any).showDescription ?? true;
+const showExcerpt = (H as any).showExcerpt ?? H.excerpt?.show ?? true;
+
+const postDesc = description || subtitle;
+const bodyExcerpt = excerpt || '';
+
+const cover = H.showCover ? (nota.data.cover ?? undefined) : undefined;
+const showMeta =
+  H.metaVisibility !== 'never' &&
+  (H.showDate ||
+    (H.showMetrics && (likes > 0 || shares > 0)) ||
+    SITE.post.showComments);
+
+// Cuando hay imagen, ampliamos el límite de caracteres para que el extracto cubra la altura
+const maxChars = cover ? Math.max(H.excerpt.maxChars, 400) : H.excerpt.maxChars;
+---
+
+<li class="nota-entry">
+  <a href={href} class={cover ? 'nota-item has-cover' : 'nota-item'}>
+    {cover && (
+      <div
+        class="nota-cover"
+        aria-hidden="true"
+        data-preview-field="home.showCover"
+        data-preview-label="Portada (imagen)"
+        data-preview-group="Inicio (listado)"
+        data-preview-class="has-cover"
+        data-preview-class-target=".nota-item"
+      >
+        <img src={`${base}${cover.src}`} alt="" loading="lazy" decoding="async" />
+      </div>
+    )}
+
+    <div class="nota-text">
+      {showTitle && title && <h2 data-preview-field="home.showTitle" data-preview-label="Título" data-preview-group="Inicio (listado)">{title}</h2>}
+
+      {showDescription && postDesc && (
+        <p class="nota-desc" data-preview-field="home.showDescription" data-preview-label="Descripción" data-preview-group="Inicio (listado)">{postDesc}</p>
+      )}
+
+      {cw ? (
+        <p class="excerpt"><em>Aviso: {cw}</em></p>
+      ) : (
+        showExcerpt && bodyExcerpt && (
+          <p class="excerpt" data-preview-field="home.excerpt.show" data-preview-label="Extracto" data-preview-group="Inicio (listado)">{truncate(bodyExcerpt, maxChars)}</p>
+        )
+      )}
+
+      {showMeta && (
+        <div class:list={['meta', H.metaVisibility === 'hover' && 'meta--hover']}>
+          {H.showDate && <FormattedDate date={date} data-preview-field="home.showDate" data-preview-label="Fecha" data-preview-group="Inicio (listado)" />}
+          {H.showMetrics && (
+            <span
+              class="engagement"
+              data-preview-field="home.showMetrics"
+              data-preview-label="Métricas (me gusta / compartidos)"
+              data-preview-group="Inicio (listado)"
+              style={likes > 0 || shares > 0 ? undefined : 'display:none'}
+              data-preview-fake-wrap="metrics"
+            >
+              <span data-preview-fake-count style={likes > 0 ? undefined : 'display:none'}>
+                <Heart size={12} aria-hidden="true" class="icon" /><span data-preview-fake-metric="likes" data-real-count={likes}>{likes}</span><span class="sr-only"> me gusta</span>
+              </span>
+              <span data-preview-fake-count style={shares > 0 ? undefined : 'display:none'}>
+                <Repeat2 size={13} aria-hidden="true" class="icon" /><span data-preview-fake-metric="shares" data-real-count={shares}>{shares}</span><span class="sr-only"> compartidos</span>
+              </span>
+            </span>
+          )}
+          {SITE.post.showComments && (
+            <span data-preview-field="post.showComments" data-preview-label="Nº de comentarios" data-preview-group="Inicio (listado)"><MessageCircle size={12} aria-hidden="true" class="icon" />{commentCount > 0 ? commentCount : ''}<span class="sr-only"> comentarios</span></span>
+          )}
+        </div>
+      )}
+    </div>
+  </a>
+</li>
